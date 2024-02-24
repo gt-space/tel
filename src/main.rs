@@ -3,9 +3,12 @@
 
 extern crate spidev;
 
+mod spi_wrapper;
+mod gpio;
+
 use std::io;
-use std::io::prelude::*;
-use spidev::{Spidev, SpidevOptions, SpidevTransfer, SpiModeFlags};
+use std::rc::Rc;
+use spidev::{Spidev, SpidevOptions, SpiModeFlags};
 
 fn create_spi() -> io::Result<Spidev> {
     let mut spi = Spidev::open("/dev/spidev0.0")?;
@@ -18,31 +21,10 @@ fn create_spi() -> io::Result<Spidev> {
     Ok(spi)
 }
 
-/// perform half duplex operations using Read and Write traits
-fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
-    let mut rx_buf = [0_u8; 10];
-    spi.write(&[0x01, 0x02, 0x03])?;
-    spi.read(&mut rx_buf)?;
-    println!("{:?}", rx_buf);
-    Ok(())
-}
-
-/// Perform full duplex operations using Ioctl
-fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
-    // "write" transfers are also reads at the same time with
-    // the read having the same length as the write
-    let tx_buf = [0x01, 0x02, 0x03];
-    let mut rx_buf = [0; 3];
-    {
-        let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
-        spi.transfer(&mut transfer)?;
-    }
-    println!("{:?}", rx_buf);
-    Ok(())
-}
-
 fn main() {
-    let mut spi = create_spi().unwrap();
-    println!("{:?}", half_duplex(&mut spi).unwrap());
-    println!("{:?}", full_duplex(&mut spi).unwrap());
+    let spi = Rc::new(create_spi().unwrap());
+    let gpio1 = gpio::Gpio::open(1);
+    let mut device1 = spi_wrapper::SpiWrapper::new(spi, gpio1.get_pin(16));
+    let mut rx_buf = [0_u8; 6];
+    let _ = device1.read_write(&mut rx_buf, &[0x19, 0x09, 0x2B, 0x00, 0x00, 0x00]);
 }
