@@ -53,7 +53,7 @@ On an Ubuntu-based development system, do the following setup steps:
 2. **Deploy to BeagleBone**
 
     ```sh
-    ./deploy.sh [lib] beaglebone            # For a tethered beaglebone
+    ./deploy.sh [lib] beaglebone.local            # For a tethered beaglebone
     ```
 
     where `[lib]` is either `musl` or `gnu`, depending on which build you wish to deploy.
