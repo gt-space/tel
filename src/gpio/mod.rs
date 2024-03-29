@@ -29,7 +29,7 @@ pub enum PinValue {
     High = 1,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug)]
 pub enum PinMode {
     Output,
     Input,
@@ -154,26 +154,6 @@ impl Pin {
             PinValue::High
         } else {
             PinValue::Low
-        }
-    }
-
-    pub fn get_mode(&self) -> PinMode {
-        let oe = self.gpio.oe.lock().unwrap();
-        let mut bits = unsafe { std::ptr::read_volatile(*oe) };
-
-        match bits & (1 << self.index) {
-            0 => PinMode::Output,
-            _ => PinMode::Input
-        }
-    }
-
-    pub fn get_value(&self) -> PinValue {
-        let dataout = self.gpio.dataout.lock().unwrap();
-        let mut bits = unsafe { std::ptr::read_volatile(*dataout) };
-
-        match bits & (1 << self.index) {
-            0 => PinValue::Low,
-            _ => PinValue::High,
         }
     }
 }

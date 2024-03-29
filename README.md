@@ -57,30 +57,3 @@ On an Ubuntu-based development system, do the following setup steps:
     ```
 
     where `[lib]` is either `musl` or `gnu`, depending on which build you wish to deploy.
-
-### Testing
-#### For BeagleBone Black
-
-1. **Build Tests**
-
-    Differences between the 2 implementations are outlined above in [Building](#building). Running the command will output
-    the path to the test executable.
-
-    ```sh
-    cargo test --no-run --target armv7-unknown-linux-musleabihf     # Will statically link MUSL libc
-    cargo test --no-run --target armv7-unknown-linux-gnueabihf      # Will dynamically link glibc
-    ```
-
-2. **Deploy to BeagleBone**
-
-    ```sh
-    scp [test executable path] debian@[beaglebone hostname]:~/tel-sw-tests            # For a tethered beaglebone
-    ```
-
-3. **Running**
-
-    SSH into the beaglebone and run the following command. Sudo is required for tests involving GPIO pins.
-
-    ```sh
-    sudo ./tel-sw-tests
-    ```
