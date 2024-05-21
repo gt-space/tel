@@ -149,4 +149,12 @@ impl SX1280 {
 
     fn WriteRegister(addr : u16, )
 
+    fn SetModulationParams(modParam1: u8, modParam2: u8, modParam3: u8) -> i16 {
+        let data: [u8, 3] = [modParam1, modParam2, modParam3];
+        // return(self::mod->SPIwriteStream(SX128X_CMD_SET_MODULATION_PARAMS, data, 3));
+        // self::mod::SPIwriteStream(SX1280_CMD_SET_MODULATION_PARAMS, data, 3)
+        // (write - master out/slave in pin 2, read - master in/slave out pin 3, chip_select pin 4 -> 3 chip selects)
+        return 0
+    }
+    
 }
