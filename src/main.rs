@@ -31,13 +31,11 @@ fn half_duplex(spi: &mut Spidev) -> io::Result<()> {
 }
 
 /// Perform full duplex operations using Ioctl
-fn full_duplex(spi: &mut Spidev) -> io::Result<()> {
+fn full_duplex(spi: &mut Spidev, tx_buf: &[u8], rx_buf: &mut [u8]) -> io::Result<()> {
     // "write" transfers are also reads at the same time with
     // the read having the same length as the write
-    let tx_buf = [0x19, 0x08, 0x91, 0x00, 0x00];
-    let mut rx_buf = [0; 5];
     {
-        let mut transfer = SpidevTransfer::read_write(&tx_buf, &mut rx_buf);
+        let mut transfer = SpidevTransfer::read_write(&tx_buf, rx_buf);
         spi.transfer(&mut transfer)?;
     }
     println!("{:?}", rx_buf);
@@ -61,10 +59,27 @@ fn main() {
     gpio::set_output("44"); // GPS-CS
     gpio::set_high("44");
     gpio::set_output("81"); // HF-CS
+
+    let mut tx_buf = [0x19, 0x08, 0x91, 0x00, 0x00, 0x00];
+    let mut rx_buf = [0; 6];
+
+    gpio::set_low("81");
+    thread::sleep(Duration::from_micros(200));
+    println!("{:?}", full_duplex(&mut spi, &mut tx_buf, &mut rx_buf).unwrap());
+    gpio::set_high("81");
+    thread::sleep(Duration::from_millis(100));
+
+    let mut tx_buf_wr = [0x18, 0x08, 0x91, 0x35];
+    let mut rx_buf_wr = [0; 4];
+    gpio::set_low("81");
+    thread::sleep(Duration::from_micros(200));
+    println!("{:?}", full_duplex(&mut spi, &mut tx_buf_wr, &mut rx_buf_wr).unwrap());
+    gpio::set_high("81");
+    thread::sleep(Duration::from_millis(100));
     loop {
         gpio::set_low("81");
         thread::sleep(Duration::from_micros(200));
-        println!("{:?}", full_duplex(&mut spi).unwrap());
+        println!("{:?}", full_duplex(&mut spi, &mut tx_buf, &mut rx_buf).unwrap());
         gpio::set_high("81");
         thread::sleep(Duration::from_millis(100));
     }
